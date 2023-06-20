@@ -1,15 +1,15 @@
 # EletronicaParaComputacao
 Projeto 2 da disciplina eletrônica para computação-SCC0180
 
-Sobre
+# Sobre
 
 // o que é o projeto e como foi feito
 
-Vídeo 
+# Vídeo 
 
 // adicionar um video breve do jogo funcionando
 
-ThinkerCad
+# ThinkerCad
 
 // print do ThinkerCad e link
 
