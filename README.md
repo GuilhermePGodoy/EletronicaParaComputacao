@@ -1,4 +1,4 @@
-# EletronicaParaComputacao
+# Projeto com Arduino - Jogo de Nave
 Projeto 2 da disciplina eletrônica para computação-SCC0180
 
 # Sobre
