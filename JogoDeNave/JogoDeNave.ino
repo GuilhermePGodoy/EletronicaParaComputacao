@@ -3,7 +3,7 @@
   Nome dos integrantes:
     Gabriel de Andrade Abreu - NUMUSP: 14571362
     Guilherme - NUMUSP: 
-    Isabela - NUMUSP: 
+    Isabela Beatriz Souza Nunes Farias - NUMUSP: 
 */
 #include <LiquidCrystal.h>
 
