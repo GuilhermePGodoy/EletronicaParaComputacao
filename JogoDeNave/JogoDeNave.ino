@@ -1,14 +1,14 @@
 /* 
-  Projeto criado para a disciplina eletrônica para computação
+  Projeto criado para a disciplina Eletrônica para Computação
   Nome dos integrantes:
     Gabriel de Andrade Abreu - NUMUSP: 14571362
-    Guilherme - NUMUSP: 
+    Guilherme Pascoale Godoy - NUMUSP: 14576277 
     Isabela Beatriz Souza Nunes Farias - NUMUSP: 
 */
 #include <LiquidCrystal.h>
 
 #define botaoCima 8
-#define botaobaixo 9
+#define botaoBaixo 9
 #define botaoTiro 10
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
@@ -19,6 +19,8 @@ int pontos, pxNave, pyNave, pxAsteroide, pyAsteroide, pxEnergia, pyEnergia, pxTi
 bool game, temTiro, temPilha;
 // game - esta pausado ou não
 double venergia;
+int vtela;
+int maxpontos = 50;
 
 /* definicao da imagem dos objetos: */
 
@@ -48,6 +50,7 @@ void setup() {
   pxTiro = -1;
   pxAsteroide = 12;
   venergia = 100;
+  vtela = 0;
 
   lcd.createChar(1, nave);
   lcd.createChar(2, asteroide);
@@ -56,12 +59,101 @@ void setup() {
   lcd.createChar(5, tiro);
   lcd.begin(16, 2);
   lcd.clear();
-  game = true;
+  game = false;
   temPilha = temPilha = false;
 }
 
 void loop() {
-  
+  //Verifica se o jogo está rodando ou não
+  if(game){
+    venergia -= 0.25;
+    //Verifica se a energia acabou
+    if(venergia <= 0){
+      game = false;
+      desenhaExplosaoNave(pxNave, pyNave);
+      vtela = 2;
+    }
+    lcd.clear();
+    painel(13);
+
+    if(digitalRead(botaoCima) == 1){
+      pyNave = 0;
+    }
+    if(digitalRead(botaoBaixo) == 1){
+      pyNave = 1;
+    }
+    if(digitalRead(botaoTiro) == 1){
+      pxTiro = 1;
+      temTiro = true;
+      pyTiro = pyNave;
+    }
+    //Altera a posição do asteroide a cada loop, para que ele se movimente para a esquerda;
+    pxAsteroide -= 1;
+    //Desenha a nave
+    desenhaNave(pxNave, pyNave);
+    //Desenha o asteroide
+    desenhaAsteroide(pxAsteroide, pyAsteroide);]
+    //Desenha o tiro, se houver algum na tela, e define seu movimento para a direita
+    if(temTiro){
+      desenhaTiro(pxTiro, pyTiro);
+      pxTiro += 1;
+    }
+    //Define a nova posição do asteroide, quando este chega no limite do display
+    if(pxAsteroide < 0){
+      pxAsteroide = 12;
+      pyAsteroide = random(0, 2);
+    }
+    //Faz o mesmo com a posição do tiro
+    if(pxTiro > 16){
+      temTiro = false;
+      pxTiro = -1;
+    }
+    //Implementa as colisões dos tiros com os asteroides
+    if(((pxTiro == pxAsteroide) && (pyTiro == pyAsteroide)) || ((pxTiro == pxAsteroide + 1)&&(pyTiro == pyAsteroide))){
+      temTiro = false;
+      pxTiro = -1;
+      desenhaExplosaoAsteroide(pxAsteroide, pyAsteroide);
+      pyAsteroide = random(0, 2);
+      pxAsteroide = 12;
+      pontos += 2;
+      //Verifica se o jogador atingiu a posição máxima
+      if(pontos >= maxpontos){
+        game = false;
+        vtela = 1;
+      }
+    }
+    //Implementa a colisão de asteroide com a nave
+    if((pxNave == pxAsteroide) && (pyNave == pyAsteroide)){
+      game = false;
+      desenhaExplosaoNave(pxNave, pyNave);
+      vtela = 2;
+    }
+    //Sorteia o aparecimento ou não de uma pilha
+    if(temPilha == false){
+      if(random(0, 60) > 58){
+        pxEnergia = 12;
+        temPilha = true;
+        pyEnergia = random(0, 2);
+      }
+    }
+    else{
+      pxEnergia -= 1;
+      desenhaEnergia(pxEnergia, pyEnergia);
+      //Verifica a colisão da pilha com a nave
+      if(((pxNave == pxEnergia + 1) && (pyNave == pyEnergia)) || ((pxNave == pxEnergia) && (pyNave == pyEnergia))){
+        temPilha = false;
+        pxEnergia = -1;
+        venergia = 100;
+      }
+    }
+    delay(velocidadeJogo);
+  }
+  else{
+    tela(vtela);
+    if(digitalRead(botaoTiro)==1){
+      reset();
+    }
+  }
 }
 
 void desenhaNave(int px, int py){
@@ -103,6 +195,7 @@ void reset(){
   pontos = 0;
   venergia = 100;
   game = true;
+  vtela = 0;
 }
 
 void painel(int px){
@@ -113,12 +206,19 @@ void painel(int px){
 }
 
 void tela(int condicao){
-  // ganhou = 1, oerdeu = 0
+  // 0 = tela inicial | 1 = ganhou | 2 = perdeu
+  if(condicao < 1){
+    lcd.setCursor(4,0);
+    lcd.print("BCC  023");
+    lcd.setCursor(0, 1);
+    lcd.print("Pressione Tiro");
+  }
+  else{
   char texto[6];
-  if(condicao > 0){
-    texto[6] = "GANHOU";
-  } else{
+  if(condicao > 1){
     texto[6] = "PERDEU";
+  } else{
+    texto[6] = "GANHOU";
   }
   
   lcd.setCursor(9, 0);
@@ -129,4 +229,5 @@ void tela(int condicao){
   lcd.print(texto);
   lcd.setCursor(0, 1);
   lcd.print("Pressione Tiro");
+  }
 }
